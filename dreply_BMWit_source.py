@@ -1,14 +1,10 @@
+# Import external libraries
 import pandas as pd
 import re
-#import matplotlib.pylab as plt # plotting
+import matplotlib.pylab as plt # plotting
 from geopy.geocoders import Nominatim # reverse geo-coding
 import numpy as np
-#import scipy as sp
 from datetime import datetime
-#from sklearn.feature_extraction import DictVectorizer
-#from sklearn.linear_model import LinearRegression, LassoCV, ElasticNetCV, RidgeCV
-#from sklearn import cross_validation
-#from sklearn.feature_selection import SelectKBest
 import seaborn as sns
 import requests
 from IPython.core.display import HTML
@@ -120,6 +116,20 @@ def lmplot(data, size=10, xlim=(0,None), ylim=(0,None)):
     g.set_axis_labels("Vehicle Age (days)", "Claim Value ($)")
     
     
+def cost_prediction((freqs, bins), a=4./7, b=200):
+    # (freqs,bins) are np.histogram() outputs
+    # a, b are part of a linear claim value mode: y=ax+b
+    bin_centers = []
+    for k in range(len(bins)-1):
+        bin_centers.append( (bins[k]+bins[k+1])/2 )
+    expense_est = (a*np.array(bin_centers) + b) * freqs
+    sns.set_style("darkgrid")
+    plt.figure(figsize=(10,3))
+    plt.plot(bin_centers, expense_est, '.-')
+    plt.xlabel('Vehicle Age (days)')
+    plt.ylabel('Predicted Claim Expenses ($)')
+    
+    
 def reverseGEO_full(latlng):
     geolocator = Nominatim()
     
@@ -166,6 +176,8 @@ def places_nearby(latlng):
     extURL = "?at=%f,%f&app_id=%s&app_code=%s&tf=plain&pretty=true" % (lat,lng,app_id,app_code)
     reqURL = baseURL+extURL
     
+    #print "https://www.here.com/discover?map=%s,%s,16,normal" % (lat,lng)
+    print "https://www.here.com/search/cafes?map=%s,%s,16,normal" % (lat,lng)
     return requests.get(reqURL).json()
 
 def places_nearby_statement(nearby_places, closer_than=1000):
